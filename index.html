@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Surgical Video Annotation Tool</title>
   <style>
     body {
@@ -12,10 +12,12 @@
       color: #333;
       padding: 20px;
     }
+    
     header {
       text-align: center;
       margin-bottom: 20px;
     }
+    
     header h1 {
       margin: 0;
       padding: 10px;
@@ -23,17 +25,26 @@
       color: #fff;
       border-radius: 4px;
     }
+    
+    .toggle-developer {
+      margin-top: 10px;
+      text-align: center;
+    }
+    
     .container {
       max-width: 900px;
       margin: 0 auto;
     }
+    
     .video-container {
       position: relative;
     }
+    
     video {
       width: 100%;
       border-radius: 4px;
     }
+    
     .annotation-overlay {
       position: absolute;
       bottom: 10%;
@@ -47,26 +58,38 @@
       max-width: 80%;
       text-align: center;
     }
-    .annotation-form {
+    
+    /* Developer annotation form styling */
+    .annotation-form,
+    .annotation-list,
+    .timeline-container {
       background: #fff;
       padding: 15px;
       margin-top: 20px;
       border: 1px solid #ddd;
       border-radius: 4px;
     }
-    .annotation-form h2 {
+    
+    .annotation-form h2,
+    .annotation-list h2,
+    .timeline-container h2 {
       margin-top: 0;
     }
+    
     .annotation-form label {
       display: block;
       margin-top: 10px;
     }
-    .annotation-form input, .annotation-form textarea {
+    
+    .annotation-form input,
+    .annotation-form textarea,
+    .annotation-form select {
       width: 100%;
       padding: 8px;
       font-size: 1em;
       margin-top: 5px;
     }
+    
     .annotation-form button {
       margin-top: 15px;
       padding: 10px 15px;
@@ -77,56 +100,134 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .annotation-list {
-      margin-top: 20px;
-      background: #fff;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .annotation-list h2 {
-      margin-top: 0;
-    }
+    
     .annotation-item {
       border-bottom: 1px solid #eee;
       padding: 10px 0;
     }
+    
     .annotation-item:last-child {
       border-bottom: none;
+    }
+    
+    .annotation-item a {
+      text-decoration: none;
+      color: #007bff;
+      cursor: pointer;
+    }
+    
+    .annotation-actions button {
+      padding: 5px 8px;
+      margin-right: 5px;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+    
+    .controls {
+      margin-top: 10px;
+      text-align: center;
+    }
+    
+    .timeline-container {
+      margin-top: 20px;
+    }
+    
+    /* Timeline marker styles */
+    .timeline {
+      position: relative;
+      background: #ddd;
+      height: 20px;
+      border-radius: 10px;
+    }
+    
+    .marker {
+      position: absolute;
+      top: -5px;
+      width: 10px;
+      height: 30px;
+      background: #007bff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+    /* Search input styling */
+    #searchInput {
+      width: 100%;
+      padding: 8px;
+      font-size: 1em;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      .annotation-overlay {
+        font-size: 1em;
+        padding: 8px 12px;
+      }
     }
   </style>
 </head>
 <body>
   <header>
     <h1>Surgical Video Annotation Tool</h1>
+    <div class="toggle-developer">
+      <label>
+        <input type="checkbox" id="devModeToggle" />
+        Developer Mode
+      </label>
+    </div>
   </header>
   <div class="container">
     <!-- Video Section -->
     <div class="video-container">
       <video id="surgicalVideo" controls>
-        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
       <!-- Annotation Overlay -->
       <div class="annotation-overlay" id="annotationOverlay"></div>
     </div>
 
-    <!-- Annotation Form -->
-    <div class="annotation-form">
-      <h2>Add Annotation</h2>
+    <!-- Timeline (shows markers for annotations) -->
+    <div class="timeline-container">
+      <h2>Video Timeline</h2>
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <!-- Developer Annotation Form -->
+    <div class="annotation-form" id="annotationFormContainer">
+      <h2>Add / Edit Annotation</h2>
       <form id="annotationForm">
-        <label for="startTime">Start Time (seconds)</label>
-        <input type="number" id="startTime" placeholder="e.g., 5" required step="0.1">
-        
-        <label for="endTime">End Time (seconds)</label>
-        <input type="number" id="endTime" placeholder="e.g., 10" required step="0.1">
+        <label for="startTime">Timestamp (seconds)</label>
+        <input type="number" id="startTime" placeholder="Auto-generated on pause" step="0.1" readonly required />
         
         <label for="annotationText">Annotation Text</label>
         <textarea id="annotationText" rows="3" placeholder="Enter annotation details..." required></textarea>
         
-        <button type="submit">Add Annotation</button>
+        <label for="annotationTags">Tags (comma separated)</label>
+        <input type="text" id="annotationTags" placeholder="e.g., incision, vessel" />
+        
+        <label for="overlayColor">Overlay Color</label>
+        <select id="overlayColor">
+          <option value="rgba(255, 193, 7, 0.9)">Yellow</option>
+          <option value="rgba(220,20,60,0.9)">Crimson</option>
+          <option value="rgba(0,128,0,0.9)">Green</option>
+          <option value="rgba(30,144,255,0.9)">DodgerBlue</option>
+        </select>
+        
+        <div class="controls">
+          <button type="submit">Save Annotation</button>
+          <button type="button" id="cancelEdit" style="display:none; background: #dc3545;">Cancel Edit</button>
+        </div>
       </form>
+      <div class="controls">
+        <button id="exportBtn">Export Annotations</button>
+        <input type="file" id="importFile" accept="application/json" />
+      </div>
     </div>
+
+    <!-- Search Field for Filtering Annotations -->
+    <input type="text" id="searchInput" placeholder="Search annotations..." />
 
     <!-- Annotations List -->
     <div class="annotation-list">
@@ -139,60 +240,239 @@
 
   <script>
     // Data store for annotations
+    // Structure: { start (number), text (string), tags (array), color (string) }
     let annotations = [];
+    let editingIndex = -1;
 
     const video = document.getElementById('surgicalVideo');
     const annotationOverlay = document.getElementById('annotationOverlay');
     const annotationForm = document.getElementById('annotationForm');
     const annotationsList = document.getElementById('annotationsList');
+    const devModeToggle = document.getElementById('devModeToggle');
+    const annotationFormContainer = document.getElementById('annotationFormContainer');
+    const timeline = document.getElementById('timeline');
+    const searchInput = document.getElementById('searchInput');
+    const cancelEditBtn = document.getElementById('cancelEdit');
+    const exportBtn = document.getElementById('exportBtn');
+    const importFile = document.getElementById('importFile');
 
-    // Update annotation list UI
+    // Load annotations from localStorage if available
+    function loadAnnotations() {
+      const stored = localStorage.getItem('annotations');
+      if (stored) {
+        annotations = JSON.parse(stored);
+      }
+    }
+    loadAnnotations();
+
+    // Save annotations to localStorage
+    function saveAnnotations() {
+      localStorage.setItem('annotations', JSON.stringify(annotations));
+    }
+
+    // Update the timeline with marker elements
+    function updateTimeline() {
+      timeline.innerHTML = "";
+      const videoDuration = video.duration || 100; // fallback
+      annotations.forEach((ann, index) => {
+        const marker = document.createElement('div');
+        marker.className = 'marker';
+        // Calculate left position as a percentage
+        const leftPercent = (ann.start / videoDuration) * 100;
+        marker.style.left = leftPercent + "%";
+        marker.title = `Click to jump to ${ann.start.toFixed(1)}s`;
+        marker.addEventListener('click', () => {
+          video.currentTime = ann.start;
+          video.pause();
+        });
+        timeline.appendChild(marker);
+      });
+    }
+
+    // Update annotations list UI with search filtering
     function updateAnnotationsList() {
-      if (annotations.length === 0) {
+      let filteredAnnotations = annotations;
+      const query = searchInput.value.trim().toLowerCase();
+      if (query) {
+        filteredAnnotations = annotations.filter(ann =>
+          ann.text.toLowerCase().includes(query) ||
+          (ann.tags && ann.tags.join(" ").toLowerCase().includes(query))
+        );
+      }
+
+      if (filteredAnnotations.length === 0) {
         annotationsList.innerHTML = '<p>No annotations available. Add one using the form above.</p>';
         return;
       }
       annotationsList.innerHTML = '';
-      annotations.forEach((ann, index) => {
+      filteredAnnotations.forEach((ann, index) => {
         const annDiv = document.createElement('div');
         annDiv.className = 'annotation-item';
-        annDiv.innerHTML = `<strong>Annotation ${index + 1}</strong> (From ${ann.start.toFixed(1)}s to ${ann.end.toFixed(1)}s): ${ann.text}`;
+        // Create clickable link that leads to a URL with query parameter `t`
+        const annotationLink = `<a href="?t=${ann.start.toFixed(1)}">${ann.start.toFixed(1)}s</a>`;
+        annDiv.innerHTML = `${annotationLink} &mdash; ${ann.text} `;
+        if (ann.tags && ann.tags.length > 0) {
+          annDiv.innerHTML += `<br/><small>Tags: ${ann.tags.join(", ")}</small>`;
+        }
+        // Actions for edit and delete if in developer mode
+        if (devModeToggle.checked) {
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'annotation-actions';
+          const editBtn = document.createElement('button');
+          editBtn.textContent = 'Edit';
+          editBtn.onclick = () => editAnnotation(index);
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.onclick = () => { 
+            if(confirm("Delete this annotation?")) {
+              annotations.splice(index, 1);
+              saveAnnotations();
+              updateAnnotationsList();
+              updateTimeline();
+            }
+          };
+          actionsDiv.appendChild(editBtn);
+          actionsDiv.appendChild(deleteBtn);
+          annDiv.appendChild(actionsDiv);
+        }
         annotationsList.appendChild(annDiv);
       });
     }
 
-    // Handle form submit event
+    // Edit annotation - load values into the form
+    function editAnnotation(index) {
+      editingIndex = index;
+      const ann = annotations[index];
+      document.getElementById('startTime').value = ann.start.toFixed(1);
+      document.getElementById('annotationText').value = ann.text;
+      document.getElementById('annotationTags').value = (ann.tags || []).join(", ");
+      document.getElementById('overlayColor').value = ann.color;
+      cancelEditBtn.style.display = 'inline-block';
+    }
+
+    // Clear form and cancel edit mode
+    function clearForm() {
+      editingIndex = -1;
+      annotationForm.reset();
+      cancelEditBtn.style.display = 'none';
+    }
+    
+    // Handle annotation form submission
     annotationForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const start = parseFloat(document.getElementById('startTime').value);
-      const end = parseFloat(document.getElementById('endTime').value);
       const text = document.getElementById('annotationText').value.trim();
-
-      if (isNaN(start) || isNaN(end) || text === "" || start >= end) {
-        alert("Please provide valid start/end times and non-empty text. Also, start time must be less than end time.");
+      const tagsStr = document.getElementById('annotationTags').value.trim();
+      const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()) : [];
+      const color = document.getElementById('overlayColor').value;
+      
+      if (isNaN(start) || text === "") {
+        alert("Invalid annotation. Please try again.");
         return;
       }
-
-      // Add new annotation to the list
-      annotations.push({ start, end, text });
+      const annData = { start, text, tags, color };
+      if (editingIndex > -1) {
+        annotations[editingIndex] = annData;
+      } else {
+        annotations.push(annData);
+      }
+      saveAnnotations();
       updateAnnotationsList();
-
-      // Clear the form
-      annotationForm.reset();
+      updateTimeline();
+      clearForm();
     });
 
-    // Listen for video time updates
+    // Cancel edit event
+    cancelEditBtn.addEventListener('click', clearForm);
+
+    // On video pause in Developer Mode, auto-fill the timestamp
+    video.addEventListener('pause', () => {
+      if (devModeToggle.checked && editingIndex === -1) {
+        document.getElementById('startTime').value = video.currentTime.toFixed(1);
+      }
+    });
+
+    // Handle video time updates to show annotations in Learner View
     video.addEventListener('timeupdate', () => {
       const currentTime = video.currentTime;
-      // Look for an annotation that should be displayed currently
-      const activeAnnotation = annotations.find(ann => currentTime >= ann.start && currentTime <= ann.end);
+      // Look for an annotation within a 0.5s tolerance
+      const activeAnnotation = annotations.find(ann => Math.abs(currentTime - ann.start) < 0.5);
       if (activeAnnotation) {
         annotationOverlay.textContent = activeAnnotation.text;
+        annotationOverlay.style.backgroundColor = activeAnnotation.color || 'rgba(255, 193, 7, 0.9)';
         annotationOverlay.style.display = 'block';
+        video.pause();
       } else {
         annotationOverlay.style.display = 'none';
       }
     });
+
+    // Filter annotations based on search input
+    searchInput.addEventListener('input', updateAnnotationsList);
+
+    // Toggle Developer Mode
+    devModeToggle.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        annotationFormContainer.style.display = 'block';
+      } else {
+        annotationFormContainer.style.display = 'none';
+      }
+      updateAnnotationsList();
+    });
+
+    // Parse URL for timestamp query parameter for learner view
+    (function checkURLForTimestamp() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const startAt = parseFloat(urlParams.get('t'));
+      if (!isNaN(startAt)) {
+        // Jump to the specified time and pause
+        video.currentTime = startAt;
+        video.pause();
+        // Optionally, display overlay if a matching annotation is found
+        const matched = annotations.find(ann => Math.abs(ann.start - startAt) < 0.1);
+        if (matched) {
+          annotationOverlay.textContent = matched.text;
+          annotationOverlay.style.backgroundColor = matched.color || 'rgba(255, 193, 7, 0.9)';
+          annotationOverlay.style.display = 'block';
+        }
+      }
+    })();
+
+    // Export annotations as a JSON file
+    exportBtn.addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(annotations, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", "annotations.json");
+      dlAnchor.click();
+    });
+
+    // Import annotations from a JSON file
+    importFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const imported = JSON.parse(evt.target.result);
+          if (Array.isArray(imported)) {
+            annotations = imported;
+            saveAnnotations();
+            updateAnnotationsList();
+            updateTimeline();
+          } else {
+            alert("Invalid file format.");
+          }
+        } catch (error) {
+          alert("Error parsing file.");
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Initial UI updates
+    video.addEventListener('loadedmetadata', updateTimeline);
+    updateAnnotationsList();
   </script>
 </body>
 </html>
