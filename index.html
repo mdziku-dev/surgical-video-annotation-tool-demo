@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Surgical Video Annotation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    video {
+      max-width: 100%;
+      height: auto;
+    }
+    .annotation {
+      margin-top: 15px;
+      padding: 10px;
+      background: #ffc107;
+      border-radius: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Surgical Video Annotation Tool</h2>
+  <video id="surgicalVideo" controls>
+    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="annotation" id="annotation">
+    <p>This is a key moment where surgical technique is critical.</p>
+  </div>
+
+  <script>
+    const video = document.getElementById('surgicalVideo');
+    const annotation = document.getElementById('annotation');
+
+    video.addEventListener('timeupdate', () => {
+      // Display annotation between 5 and 10 seconds for demo purposes
+      if (video.currentTime >= 5 && video.currentTime <= 10) {
+        annotation.style.display = 'block';
+      } else {
+        annotation.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
