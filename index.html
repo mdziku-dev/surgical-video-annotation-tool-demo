@@ -3,46 +3,194 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Surgical Video Annotation</title>
+  <title>Surgical Video Annotation Tool</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f3f3f3;
+      color: #333;
       padding: 20px;
+    }
+    header {
       text-align: center;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      margin: 0;
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border-radius: 4px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .video-container {
+      position: relative;
     }
     video {
-      max-width: 100%;
-      height: auto;
-    }
-    .annotation {
-      margin-top: 15px;
-      padding: 10px;
-      background: #ffc107;
+      width: 100%;
       border-radius: 4px;
+    }
+    .annotation-overlay {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 15px;
+      background-color: rgba(255, 193, 7, 0.9);
+      border-radius: 4px;
+      font-size: 1.1em;
       display: none;
+      max-width: 80%;
+      text-align: center;
+    }
+    .annotation-form {
+      background: #fff;
+      padding: 15px;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .annotation-form h2 {
+      margin-top: 0;
+    }
+    .annotation-form label {
+      display: block;
+      margin-top: 10px;
+    }
+    .annotation-form input, .annotation-form textarea {
+      width: 100%;
+      padding: 8px;
+      font-size: 1em;
+      margin-top: 5px;
+    }
+    .annotation-form button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      font-size: 1em;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .annotation-list {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .annotation-list h2 {
+      margin-top: 0;
+    }
+    .annotation-item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+    .annotation-item:last-child {
+      border-bottom: none;
     }
   </style>
 </head>
 <body>
-  <h2>Surgical Video Annotation Tool</h2>
-  <video id="surgicalVideo" controls>
-    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-  <div class="annotation" id="annotation">
-    <p>This is a key moment where surgical technique is critical.</p>
+  <header>
+    <h1>Surgical Video Annotation Tool</h1>
+  </header>
+  <div class="container">
+    <!-- Video Section -->
+    <div class="video-container">
+      <video id="surgicalVideo" controls>
+        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <!-- Annotation Overlay -->
+      <div class="annotation-overlay" id="annotationOverlay"></div>
+    </div>
+
+    <!-- Annotation Form -->
+    <div class="annotation-form">
+      <h2>Add Annotation</h2>
+      <form id="annotationForm">
+        <label for="startTime">Start Time (seconds)</label>
+        <input type="number" id="startTime" placeholder="e.g., 5" required step="0.1">
+        
+        <label for="endTime">End Time (seconds)</label>
+        <input type="number" id="endTime" placeholder="e.g., 10" required step="0.1">
+        
+        <label for="annotationText">Annotation Text</label>
+        <textarea id="annotationText" rows="3" placeholder="Enter annotation details..." required></textarea>
+        
+        <button type="submit">Add Annotation</button>
+      </form>
+    </div>
+
+    <!-- Annotations List -->
+    <div class="annotation-list">
+      <h2>Annotations List</h2>
+      <div id="annotationsList">
+        <p>No annotations available. Add one using the form above.</p>
+      </div>
+    </div>
   </div>
 
   <script>
-    const video = document.getElementById('surgicalVideo');
-    const annotation = document.getElementById('annotation');
+    // Data store for annotations
+    let annotations = [];
 
+    const video = document.getElementById('surgicalVideo');
+    const annotationOverlay = document.getElementById('annotationOverlay');
+    const annotationForm = document.getElementById('annotationForm');
+    const annotationsList = document.getElementById('annotationsList');
+
+    // Update annotation list UI
+    function updateAnnotationsList() {
+      if (annotations.length === 0) {
+        annotationsList.innerHTML = '<p>No annotations available. Add one using the form above.</p>';
+        return;
+      }
+      annotationsList.innerHTML = '';
+      annotations.forEach((ann, index) => {
+        const annDiv = document.createElement('div');
+        annDiv.className = 'annotation-item';
+        annDiv.innerHTML = `<strong>Annotation ${index + 1}</strong> (From ${ann.start.toFixed(1)}s to ${ann.end.toFixed(1)}s): ${ann.text}`;
+        annotationsList.appendChild(annDiv);
+      });
+    }
+
+    // Handle form submit event
+    annotationForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const start = parseFloat(document.getElementById('startTime').value);
+      const end = parseFloat(document.getElementById('endTime').value);
+      const text = document.getElementById('annotationText').value.trim();
+
+      if (isNaN(start) || isNaN(end) || text === "" || start >= end) {
+        alert("Please provide valid start/end times and non-empty text. Also, start time must be less than end time.");
+        return;
+      }
+
+      // Add new annotation to the list
+      annotations.push({ start, end, text });
+      updateAnnotationsList();
+
+      // Clear the form
+      annotationForm.reset();
+    });
+
+    // Listen for video time updates
     video.addEventListener('timeupdate', () => {
-      // Display annotation between 5 and 10 seconds for demo purposes
-      if (video.currentTime >= 5 && video.currentTime <= 10) {
-        annotation.style.display = 'block';
+      const currentTime = video.currentTime;
+      // Look for an annotation that should be displayed currently
+      const activeAnnotation = annotations.find(ann => currentTime >= ann.start && currentTime <= ann.end);
+      if (activeAnnotation) {
+        annotationOverlay.textContent = activeAnnotation.text;
+        annotationOverlay.style.display = 'block';
       } else {
-        annotation.style.display = 'none';
+        annotationOverlay.style.display = 'none';
       }
     });
   </script>
